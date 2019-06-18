@@ -31,6 +31,8 @@ npm i react-native-gesture-handler
 react-native link react-native-gesture-handler
 npm i rn-fetch-blob
 react-native link rn-fetch-blob
+npm i "git+https://github.com/mikehardy/react-native-bottomsheet.git#androidx-dependency-fix"
+react-native link react-native-bottomsheet
 
 # Set up AndroidX for RN0.59.9 which is still using support libraries
 echo "android.useAndroidX=true" >> android/gradle.properties
