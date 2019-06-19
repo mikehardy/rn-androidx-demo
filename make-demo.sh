@@ -33,6 +33,16 @@ npm i rn-fetch-blob
 react-native link rn-fetch-blob
 npm i "git+https://github.com/mikehardy/react-native-bottomsheet.git#androidx-dependency-fix"
 react-native link react-native-bottomsheet
+npm i react-native-fbsdk
+react-native link react-native-fbsdk
+
+# FBSDK is special - you have to create and register a Callbackmanager
+sed -i -e $'s/import com.facebook.reactnative.androidsdk.FBSDKPackage/import com.facebook.CallbackManager;\\\nimport com.facebook.reactnative.androidsdk.FBSDKPackage/' android/app/src/main/java/com/rnandroidxdemo/MainApplication.java
+sed -i -e $'s/new FBSDKPackage()/new FBSDKPackage(CallbackManager.Factory.create())/' android/app/src/main/java/com/rnandroidxdemo/MainApplication.java
+
+npm i react-native-maps
+react-native link react-native-maps
+
 
 # Set up AndroidX for RN0.59.9 which is still using support libraries
 echo "android.useAndroidX=true" >> android/gradle.properties
