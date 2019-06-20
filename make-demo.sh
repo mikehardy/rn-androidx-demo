@@ -73,7 +73,7 @@ npm i jetifier
 # If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
 if [ ${CI} = "true" ]; then 
   rm -f ./node_modules/jetifier/bin/jetify
-  cp ../jetifier/bin/jetify ./node_modules/jetifier/bin/jetify 
+  cp ../../jetifier/bin/jetify ./node_modules/jetifier/bin/jetify 
 fi
 npx jetify
 
