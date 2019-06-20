@@ -5,7 +5,7 @@ set -e
 \rm -fr rnandroidxdemo
 
 # If we are in CI then react-native won't be installed yet
-if [[ ( "$CI" == "TRUE" ) ]]; then npm i -g react-native; fi
+if [ "${CI}" == "TRUE" ]; then echo "Installing react-native in CI"; npm i -g react-native; fi
 
 react-native init rnandroidxdemo
 cd rnandroidxdemo
@@ -75,7 +75,7 @@ echo "android.enableJetifier=true" >> android/gradle.properties
 npm i jetifier
 
 # If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
-if [[ ( "$CI" == "TRUE" ) ]]; then 
+if [ "${CI}" == "TRUE" ]; then 
   rm -f ./node_modules/jetifier/bin/jetify
   cp ../jetifier/bin/jetify ./node_modules/jetifier/bin/jetify 
 fi
