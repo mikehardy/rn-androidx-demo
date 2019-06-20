@@ -52,6 +52,14 @@ react-native link react-native-razorpay
 # shouldn't affect AndroidX demonstration so we'll go with it
 sed -i -e $'s/minSdkVersion = 16/minSdkVersion = 21/' android/build.gradle
 
+# react-native-blur is special because renderscript isn't handled by normal Google jetifier. But we do it 8-)
+npm i @react-native-community/blur
+react-native link @react-native-community/blur
+
+# react-native-blur is a little special though, it needs some special gradle sauce
+sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptTargetApi 28/' android/app/build.gradle
+sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeEnabled true/' android/app/build.gradle
+
 # Set up AndroidX for RN0.59.9 which is still using support libraries
 echo "android.useAndroidX=true" >> android/gradle.properties
 echo "android.enableJetifier=true" >> android/gradle.properties
