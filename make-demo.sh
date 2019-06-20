@@ -60,6 +60,10 @@ react-native link @react-native-community/blur
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptTargetApi 28/' android/app/build.gradle
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeEnabled true/' android/app/build.gradle
 
+# This is a kotlin repo, so will test kotlin transform
+npm i "git+https://github.com/mikehardy/rn-android-prompt.git"
+react-native link rn-android-prompt
+
 # Set up AndroidX for RN0.59.9 which is still using support libraries
 echo "android.useAndroidX=true" >> android/gradle.properties
 echo "android.enableJetifier=true" >> android/gradle.properties
