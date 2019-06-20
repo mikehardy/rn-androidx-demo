@@ -3,6 +3,10 @@ set -e
 
 # Basic template create, rnfb install, link
 \rm -fr rnandroidxdemo
+
+# If we are in CI then react-native won't be installed yet
+if [[ ( "$CI" == "TRUE" ) ]]; then npm i -g react-native; fi
+
 react-native init rnandroidxdemo
 cd rnandroidxdemo
 
@@ -67,7 +71,15 @@ react-native link rn-android-prompt
 # Set up AndroidX for RN0.59.9 which is still using support libraries
 echo "android.useAndroidX=true" >> android/gradle.properties
 echo "android.enableJetifier=true" >> android/gradle.properties
-npm i jetifier && npx jetify
+
+npm i jetifier
+
+# If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
+if [[ ( "$CI" == "TRUE" ) ]]; then 
+  rm -f ./node_modules/jetifier/bin/jetify
+  cp ../jetifier/bin/jetify ./node_modules/jetifier/bin/jetify 
+fi
+npx jetify
 
 # Copy our demonstration App.js into place (so it is persistent across rebuilds)
 rm -f App.js && cp ../App.js .
@@ -84,4 +96,19 @@ cd android/
 ./gradlew assembleRelease
 cd ..
 
-npx react-native run-android
+# Now try to reverse the process
+
+# Pin some dependencies back to pre-AndroidX
+sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "16.1.0"/' android/build.gradle
+sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "16.1.0"/' android/build.gradle
+sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "16.2.0"/' android/build.gradle
+
+npx jetify -r
+rm -f android/gradle.properties
+cd android/
+./gradlew clean
+./gradlew assembleDebug
+./gradlew assembleRelease
+cd ..
+
+
