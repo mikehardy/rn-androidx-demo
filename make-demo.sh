@@ -3,10 +3,6 @@ set -e
 
 # Basic template create, rnfb install, link
 \rm -fr rnandroidxdemo
-
-# If we are in CI then react-native won't be installed yet
-if [ ${CI} = "true" ]; then echo "Installing react-native in CI"; npm i -g react-native; fi
-
 react-native init rnandroidxdemo
 cd rnandroidxdemo
 
