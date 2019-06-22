@@ -45,7 +45,7 @@ react-native link react-native-maps
 
 # react-native-razorpay does not allow version overrides so compileSdk is 26 - that breaks.
 # I made an upstream PR to patch it so you can override, and default to 28 which works with AndroidX
-npm i "git+https://github.com/mikehardy/react-native-razorpay.git#allow-version-overrides"
+npm i "git+https://github.com/razorpay/react-native-razorpay.git"
 react-native link react-native-razorpay
 
 # Razorpay requires minSdk 19 - and this is so big now we need MultiDex if we don't go to 21
