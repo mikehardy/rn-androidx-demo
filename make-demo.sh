@@ -61,7 +61,7 @@ sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptTargetApi 28
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeEnabled true/' android/app/build.gradle
 
 # This is a kotlin repo, so will test kotlin transform
-npm i "git+https://github.com/mikehardy/rn-android-prompt.git"
+npm i "git+https://github.com/rozPierog/rn-android-prompt.git"
 react-native link rn-android-prompt
 
 # Set up AndroidX for RN0.59.9 which is still using support libraries
