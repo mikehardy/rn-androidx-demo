@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e 
 
+# If we're in CI let's get in a clean directory
+if [ "${CI}" == "true" ]; then 
+  cd $HOME
+fi
+
 # Basic template create, rnfb install, link
 \rm -fr rnandroidxdemo
 react-native init rnandroidxdemo
@@ -68,17 +73,22 @@ react-native link rn-android-prompt
 echo "android.useAndroidX=true" >> android/gradle.properties
 echo "android.enableJetifier=true" >> android/gradle.properties
 
-npm i jetifier
-
 # If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
-if [ ${CI} = "true" ]; then 
-  rm -f ./node_modules/jetifier/bin/jetify
-  cp ${TRAVIS_BUILD_DIR}/bin/jetify ./node_modules/jetifier/bin/jetify 
+if [ "${CI}" == "true" ]; then 
+  npm i ${TRAVIS_BUILD_DIR}
+else
+  npm i jetify
+  #npm i $HOME/work/react-random/jetifier
 fi
+
 npx jetify
 
 # Copy our demonstration App.js into place (so it is persistent across rebuilds)
-rm -f App.js && cp ../App.js .
+if [ "${CI}" == "true" ]; then 
+  rm -f App.js && cp ${TRAVIS_BUILD_DIR}/rn-androidx-demo/App.js .
+else
+  rm -f App.js && cp ../App.js .
+fi
 
 # Run it for Android (assumes you have an android emulator running)
 if [ "$(uname)" == "Darwin" ]; then # this works around env var problems in mac
@@ -106,5 +116,3 @@ cd android/
 ./gradlew assembleDebug
 ./gradlew assembleRelease
 cd ..
-
-
