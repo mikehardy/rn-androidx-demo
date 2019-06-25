@@ -84,7 +84,9 @@ sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptTargetApi 28
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeEnabled true/' android/app/build.gradle
 
 # This is a kotlin repo, so will test kotlin transform
-npm i "git+https://github.com/rozPierog/rn-android-prompt.git"
+# This one also needed to override the entire appcompat library name for RN60
+# https://github.com/mikehardy/rn-android-prompt/blob/patch-1/android/build.gradle#L56
+npm i 'git+https://github.com/mikehardy/rn-android-prompt.git#patch-1'
 react-native link rn-android-prompt
 
 
