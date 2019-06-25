@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e 
 
+
 # If we're in CI let's get in a clean directory
 if [ "${CI}" == "true" ]; then 
   cd $HOME
@@ -8,7 +9,17 @@ fi
 
 # Basic template create, rnfb install, link
 \rm -fr rnandroidxdemo
-react-native init rnandroidxdemo
+
+# Which version of react-native to use? We test forward and reverse on RN59, only forward on RN60
+if [ "${RNVERSION}" == "60" ]; then
+  echo "Testing react-native 0.60 AndroidX app compatibility with AndroidX and non-AndroidX libraries"
+  react-native init rnandroidxdemo --version react-native@0.60.0-rc.2
+else
+  # In the absence of overrides, we will work on RNVersion 59
+  RNVERSION=59
+  echo "Testing react-native 0.59 AndroidX and non-AndroidX app compatibility with AndroidX and non-AndroidX libraries"
+  react-native init rnandroidxdemo --version react-native@0.59.9
+fi
 cd rnandroidxdemo
 
 # Install a bunch of native modules that might use support libraries
@@ -38,18 +49,25 @@ npm i rn-fetch-blob
 react-native link rn-fetch-blob
 npm i react-native-bottomsheet
 react-native link react-native-bottomsheet
-npm i react-native-fbsdk
-react-native link react-native-fbsdk
 
-# FBSDK is special - you have to create and register a Callbackmanager
+# FBSDK is special - you have to create and register a Callbackmanager in the constructor
+# So you have to turn off auto-linking at the moment then link, then fix the constructor to have the argument
+npm i react-native-fbsdk
+echo "module.exports = { dependencies: { 'react-native-fbsdk': { platforms: { android: undefined } } } };" > react-native.config.js
+react-native link react-native-fbsdk
 sed -i -e $'s/import com.facebook.reactnative.androidsdk.FBSDKPackage/import com.facebook.CallbackManager;\\\nimport com.facebook.reactnative.androidsdk.FBSDKPackage/' android/app/src/main/java/com/rnandroidxdemo/MainApplication.java
 sed -i -e $'s/new FBSDKPackage()/new FBSDKPackage(CallbackManager.Factory.create())/' android/app/src/main/java/com/rnandroidxdemo/MainApplication.java
 
-npm i react-native-maps
+# It appears RN0.60 will have androidx library collisions if you specify a current one
+# in your dependencies, but gradle-plugin-jetifier auto-translates to 1.0.0 "strictly"
+# Unreleased patch here allows the *entire library name* to be changed so you can move the whole dependency
+# That was a special PR just for this project. If it works, other libraries might need it:
+# https://github.com/react-native-community/react-native-maps/commit/0c76619e8b4d591265348beb83f315ad05311670
+npm i 'git+https://github.com/react-native-community/react-native-maps.git#mikehardy-patch-1'
 react-native link react-native-maps
 
-# react-native-razorpay does not allow version overrides so compileSdk is 26 - that breaks.
-# I made an upstream PR to patch it so you can override, and default to 28 which works with AndroidX
+# react-native-razorpay does not allow version overrides so compileSdk is 26 - that breaks. 28 is jetify-able
+# master has an unreleased upstream PR to patch it so you can override, w/default to 28 for AndroidX
 npm i "git+https://github.com/razorpay/react-native-razorpay.git"
 react-native link react-native-razorpay
 
@@ -61,7 +79,7 @@ sed -i -e $'s/minSdkVersion = 16/minSdkVersion = 21/' android/build.gradle
 npm i @react-native-community/blur
 react-native link @react-native-community/blur
 
-# react-native-blur is a little special though, it needs some special gradle sauce
+# renderscript in general need some special gradle sauce
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptTargetApi 28/' android/app/build.gradle
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeEnabled true/' android/app/build.gradle
 
@@ -69,16 +87,29 @@ sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeE
 npm i "git+https://github.com/rozPierog/rn-android-prompt.git"
 react-native link rn-android-prompt
 
-# Set up AndroidX for RN0.59.9 which is still using support libraries
+
+# Assuming your code uses AndroidX, this is all the AndroidStudio AndroidX migration does besides transform
+# your app source and app libraries
 echo "android.useAndroidX=true" >> android/gradle.properties
 echo "android.enableJetifier=true" >> android/gradle.properties
+
+# For RN60 Pin our AndroidX dependencies, including full library overrides (like for react-native-maps)
+# For RN59, new templates already come out with supportLibVersion set to 28, or we'd set it here
+if [ "${RNVERSION}" == "60" ]; then
+  sed -i -e $'s/supportLibVersion = "28.0.0"/supportLibVersion = "1.0.2"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        coreLibVersion = "1.0.2"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        compatLibVersion = "1.0.2"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        coreLibName = "androidx.core:core"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "17.0.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "17.0.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "18.0.0"/' android/build.gradle
+fi
 
 # If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
 if [ "${CI}" == "true" ]; then 
   npm i ${TRAVIS_BUILD_DIR}
 else
-  npm i jetify
-  #npm i $HOME/work/react-random/jetifier
+  npm i jetifier
 fi
 
 npx jetify
@@ -102,17 +133,19 @@ cd android/
 ./gradlew assembleRelease
 cd ..
 
-# Now try to reverse the process
+# If we are on RN0.59 it should be possible to go backwards. Try to reverse the process
+if [ "${RNVERSION}" == "59"]; then
 
-# Pin some dependencies back to pre-AndroidX
-sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "16.1.0"/' android/build.gradle
-sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "16.1.0"/' android/build.gradle
-sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "16.2.0"/' android/build.gradle
+  # Pin some dependencies back to pre-AndroidX
+  sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "16.1.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "16.1.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "16.2.0"/' android/build.gradle
 
-npx jetify -r
-rm -f android/gradle.properties
-cd android/
-./gradlew clean
-./gradlew assembleDebug
-./gradlew assembleRelease
-cd ..
+  npx jetify -r
+  rm -f android/gradle.properties
+  cd android/
+  ./gradlew clean
+  ./gradlew assembleDebug
+  ./gradlew assembleRelease
+  cd ..
+fi
