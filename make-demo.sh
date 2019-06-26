@@ -136,7 +136,7 @@ cd android/
 cd ..
 
 # If we are on RN0.59 it should be possible to go backwards. Try to reverse the process
-if [ "${RNVERSION}" == "59"]; then
+if [ "${RNVERSION}" == "59" ]; then
 
   # Pin some dependencies back to pre-AndroidX
   sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "16.1.0"/' android/build.gradle
