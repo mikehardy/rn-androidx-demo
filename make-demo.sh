@@ -139,7 +139,7 @@ if [ "${RNVERSION}" == "59" ]; then
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "16.1.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "16.2.0"/' android/build.gradle
 
-  npx jetify -r
+  time npx jetify -r
   rm -f android/gradle.properties
   cd android/
   ./gradlew clean
