@@ -5,6 +5,15 @@ set -e
 # If we're in CI let's get in a clean directory
 if [ "${CI}" == "true" ]; then 
   cd $HOME
+
+  # Let's also make sure we have enough file handles
+  if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+    sudo sysctl fs.inotify.max_user_watches=524288
+  fi
+  if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+    sudo launchctl limit maxfiles 1000000 1000000 || true
+    ulimit -n 1000000 || true
+  fi
 fi
 
 # Basic template create, rnfb install, link
