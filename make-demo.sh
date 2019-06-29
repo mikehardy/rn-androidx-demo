@@ -117,8 +117,12 @@ fi
 
 # Run it for Android (assumes you have an android emulator running)
 if [ "$(uname)" == "Darwin" ]; then # this works around env var problems in mac
-  USER=`whoami`
-  echo "sdk.dir=/Users/$USER/Library/Android/sdk" > android/local.properties
+  if [ "${CI}" == true ]; then
+    echo "ANDROID_SDK is $ANDROID_SDK"
+  else
+    USER=`whoami`
+    echo "sdk.dir=/Users/$USER/Library/Android/sdk" > android/local.properties
+  fi
 fi
 
 # If you don't try assembleRelease you might miss some resource errors
