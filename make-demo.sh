@@ -127,7 +127,7 @@ fi
 
 # If you don't try assembleRelease you might miss some resource errors
 cd android/
-./gradlew assembleDebug
+#./gradlew assembleDebug
 ./gradlew assembleRelease
 cd ..
 
@@ -143,7 +143,7 @@ if [ "${RNVERSION}" == "59" ]; then
   rm -f android/gradle.properties
   cd android/
   ./gradlew clean
-  ./gradlew assembleDebug
+  #./gradlew assembleDebug
   ./gradlew assembleRelease
   cd ..
 fi
