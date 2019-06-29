@@ -104,9 +104,9 @@ else
 fi
 
 # Not sure why, but on macOS + node.js v12.x, this is needed as a manual install step
-npm i node-pre-gyp
+#npm i node-pre-gyp
 
-npx jetify
+time npx jetify
 
 # Copy our demonstration App.js into place (so it is persistent across rebuilds)
 if [ "${CI}" == "true" ]; then 
