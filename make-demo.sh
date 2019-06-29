@@ -45,18 +45,8 @@ react-native link react-native-vector-icons
 npm i react-navigation
 npm i react-native-gesture-handler
 react-native link react-native-gesture-handler
-npm i rn-fetch-blob
-react-native link rn-fetch-blob
 npm i react-native-bottomsheet
 react-native link react-native-bottomsheet
-
-# FBSDK is special - you have to create and register a Callbackmanager in the constructor
-# So you have to turn off auto-linking at the moment then link, then fix the constructor to have the argument
-npm i react-native-fbsdk
-echo "module.exports = { dependencies: { 'react-native-fbsdk': { platforms: { android: undefined } } } };" > react-native.config.js
-react-native link react-native-fbsdk
-sed -i -e $'s/import com.facebook.reactnative.androidsdk.FBSDKPackage/import com.facebook.CallbackManager;\\\nimport com.facebook.reactnative.androidsdk.FBSDKPackage/' android/app/src/main/java/com/rnandroidxdemo/MainApplication.java
-sed -i -e $'s/new FBSDKPackage()/new FBSDKPackage(CallbackManager.Factory.create())/' android/app/src/main/java/com/rnandroidxdemo/MainApplication.java
 
 # It appears RN0.60 will have androidx library collisions if you specify a current one
 # in your dependencies, but gradle-plugin-jetifier auto-translates to 1.0.0 "strictly"
@@ -68,8 +58,8 @@ react-native link react-native-maps
 
 # react-native-razorpay does not allow version overrides so compileSdk is 26 - that breaks. 28 is jetify-able
 # master has an unreleased upstream PR to patch it so you can override, w/default to 28 for AndroidX
-npm i "git+https://github.com/razorpay/react-native-razorpay.git"
-react-native link react-native-razorpay
+#npm i "git+https://github.com/razorpay/react-native-razorpay.git"
+#react-native link react-native-razorpay
 
 # Razorpay requires minSdk 19 - and this is so big now we need MultiDex if we don't go to 21
 # shouldn't affect AndroidX demonstration so we'll go with it
@@ -88,7 +78,6 @@ sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeE
 # https://github.com/mikehardy/rn-android-prompt/blob/patch-1/android/build.gradle#L56
 npm i 'git+https://github.com/mikehardy/rn-android-prompt.git#patch-1'
 react-native link rn-android-prompt
-
 
 # Assuming your code uses AndroidX, this is all the AndroidStudio AndroidX migration does besides transform
 # your app source and app libraries
@@ -113,6 +102,9 @@ if [ "${CI}" == "true" ]; then
 else
   npm i jetifier
 fi
+
+# Not sure why, but on macOS + node.js v12.x, this is needed as a manual install step
+npm i node-pre-gyp
 
 npx jetify
 
