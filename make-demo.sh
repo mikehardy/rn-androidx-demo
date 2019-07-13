@@ -40,6 +40,19 @@ react-native link react-native-camera
 # Camera is special - you have to choose a missingDimensionStrategy
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n        missingDimensionStrategy "react-native-camera", "general"/' android/app/build.gradle
 
+# This one uses a class that needs transform but another valid transform is a *superstring* of it
+# it demonstrates jetifier#32
+# For now it needs unpublished changes from PR #72 in that library to work
+npm i "git+https://github.com/mikehardy/react-native-photo-editor.git#jetifier-support"
+react-native link react-native-photo-editor
+
+# react-native-photo-editor pulls things from jitpack, add that repo
+sed -i -e $'s/jcenter()/jcenter()\\\n          maven { url "https:\/\/jitpack.io" }/g' android/build.gradle
+
+# react-native-photo-editor also requires an override for backup
+sed -i -e $'s/<application/<application\\\n      tools:replace="android:allowBackup"/' android/app/src/main/AndroidManifest.xml
+sed -i -e $'s/<manifest /<manifest xmlns:tools="http:\/\/schemas.android.com\/tools" /' android/app/src/main/AndroidManifest.xml
+
 npm i react-native-fs
 react-native link react-native-fs
 npm i "git+https://github.com/laurent22/react-native-push-notification.git"
@@ -103,6 +116,8 @@ if [ "${RNVERSION}" == "60" ]; then
   sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "17.0.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "17.0.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "18.0.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        constraintLayoutLibVersion = "1.1.3"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        designLibVersion = "1.0.0"/' android/build.gradle
 fi
 
 # If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
