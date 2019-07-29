@@ -32,29 +32,29 @@ fi
 cd rnandroidxdemo
 
 # Install a bunch of native modules that might use support libraries
-npm i @react-native-community/slider
+yarn add @react-native-community/slider
 react-native link @react-native-community/slider
-npm i react-native-camera
+yarn add react-native-camera
 react-native link react-native-camera
 
 # Camera is special - you have to choose a missingDimensionStrategy
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n        missingDimensionStrategy "react-native-camera", "general"/' android/app/build.gradle
 
-npm i react-native-fs
+yarn add react-native-fs
 react-native link react-native-fs
-npm i "git+https://github.com/laurent22/react-native-push-notification.git"
+yarn add "git+https://github.com/laurent22/react-native-push-notification.git"
 \rm -fr node_modules/react-native-push-notification/.git
 react-native link react-native-push-notification
-npm i react-native-securerandom
+yarn add react-native-securerandom
 react-native link react-native-securerandom
-npm i react-native-sqlite-storage
+yarn add react-native-sqlite-storage
 react-native link react-native-sqlite-storage
-npm i react-native-vector-icons
+yarn add react-native-vector-icons
 react-native link react-native-vector-icons
-npm i react-navigation
-npm i react-native-gesture-handler
+yarn add react-navigation
+yarn add react-native-gesture-handler
 react-native link react-native-gesture-handler
-npm i react-native-bottomsheet
+yarn add react-native-bottomsheet
 react-native link react-native-bottomsheet
 
 # It appears RN0.60 will have androidx library collisions if you specify a current one
@@ -62,12 +62,12 @@ react-native link react-native-bottomsheet
 # Unreleased patch here allows the *entire library name* to be changed so you can move the whole dependency
 # That was a special PR just for this project. If it works, other libraries might need it:
 # https://github.com/react-native-community/react-native-maps/commit/0c76619e8b4d591265348beb83f315ad05311670
-npm i 'git+https://github.com/react-native-community/react-native-maps.git#mikehardy-patch-1'
+yarn add 'git+https://github.com/react-native-community/react-native-maps.git#mikehardy-patch-1'
 react-native link react-native-maps
 
 # react-native-razorpay does not allow version overrides so compileSdk is 26 - that breaks. 28 is jetify-able
 # master has an unreleased upstream PR to patch it so you can override, w/default to 28 for AndroidX
-#npm i "git+https://github.com/razorpay/react-native-razorpay.git"
+#yarn add "git+https://github.com/razorpay/react-native-razorpay.git"
 #react-native link react-native-razorpay
 
 # Razorpay requires minSdk 19 - and this is so big now we need MultiDex if we don't go to 21
@@ -75,7 +75,7 @@ react-native link react-native-maps
 sed -i -e $'s/minSdkVersion = 16/minSdkVersion = 21/' android/build.gradle
 
 # react-native-blur is special because renderscript isn't handled by normal Google jetifier. But we do it 8-)
-npm i @react-native-community/blur
+yarn add @react-native-community/blur
 react-native link @react-native-community/blur
 
 # renderscript in general need some special gradle sauce
@@ -85,7 +85,7 @@ sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeE
 # This is a kotlin repo, so will test kotlin transform
 # This one also needed to override the entire appcompat library name for RN60
 # https://github.com/mikehardy/rn-android-prompt/blob/patch-1/android/build.gradle#L56
-npm i 'git+https://github.com/mikehardy/rn-android-prompt.git#patch-1'
+yarn add 'git+https://github.com/mikehardy/rn-android-prompt.git#patch-1'
 react-native link rn-android-prompt
 
 # Assuming your code uses AndroidX, this is all the AndroidStudio AndroidX migration does besides transform
@@ -107,13 +107,13 @@ fi
 
 # If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
 if [ "${CI}" == "true" ]; then 
-  npm i ${TRAVIS_BUILD_DIR}
+  yarn add ${TRAVIS_BUILD_DIR}
 else
-  npm i jetifier
+  yarn add jetifier
 fi
 
 # Not sure why, but on macOS + node.js v12.x, this is needed as a manual install step
-#npm i node-pre-gyp
+#yarn add node-pre-gyp
 
 time npx jetify
 
@@ -147,6 +147,13 @@ if [ "${RNVERSION}" == "59" ]; then
   sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "16.1.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "16.1.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "16.2.0"/' android/build.gradle
+
+
+  # react-native-camera specifically is having some sort of reverse-jetify problem.
+  # gradle refuses to resolve the support library dependencies correctly and I'm out of time
+  # to figure out why, given reverse-jetify is a niche case anyway. You can use the older version
+  # of react-native-camera in the meanwhile
+  yarn add react-native-camera@2.11.1
 
   time npx jetify -r
   rm -f android/gradle.properties
