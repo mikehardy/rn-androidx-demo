@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e 
 
-
 # If we're in CI let's get in a clean directory
 if [ "${CI}" == "true" ]; then 
   cd $HOME
@@ -13,6 +12,7 @@ if [ "${CI}" == "true" ]; then
   if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     sudo launchctl limit maxfiles 1000000 1000000 || true
     ulimit -n 1000000 || true
+    npm i yarn -g # on Travis macOS yarn isn't installed?
   fi
 fi
 
