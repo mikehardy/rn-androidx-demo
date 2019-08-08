@@ -83,9 +83,7 @@ sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptTargetApi 28
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeEnabled true/' android/app/build.gradle
 
 # This is a kotlin repo, so will test kotlin transform
-# This one also needed to override the entire appcompat library name for RN60
-# https://github.com/mikehardy/rn-android-prompt/blob/patch-1/android/build.gradle#L56
-yarn add 'git+https://github.com/mikehardy/rn-android-prompt.git#patch-1'
+yarn add rn-android-prompt
 react-native link rn-android-prompt
 
 # Assuming your code uses AndroidX, this is all the AndroidStudio AndroidX migration does besides transform
