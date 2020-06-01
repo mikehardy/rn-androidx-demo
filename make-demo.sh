@@ -20,15 +20,8 @@ fi
 \rm -fr rnandroidxdemo
 
 # Which version of react-native to use? We test forward and reverse on RN59, only forward on RN60
-if [ "${RNVERSION}" == "60" ]; then
-  echo "Testing react-native 0.60 AndroidX app compatibility with AndroidX and non-AndroidX libraries"
-  react-native init rnandroidxdemo --version react-native@0.60
-else
-  # In the absence of overrides, we will work on RNVersion 59
-  RNVERSION=59
-  echo "Testing react-native 0.59 AndroidX and non-AndroidX app compatibility with AndroidX and non-AndroidX libraries"
-  react-native init rnandroidxdemo --version react-native@0.59
-fi
+echo "Testing react-native 0.$RNVERSION AndroidX and non-AndroidX compatibility"
+react-native init rnandroidxdemo --version react-native@0.$RNVERSION
 cd rnandroidxdemo
 
 # Install a bunch of native modules that might use support libraries
