@@ -108,6 +108,7 @@ if [ "${RNVERSION}" == "59" ]; then
   sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "16.1.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "16.1.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "16.2.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        firebaseMessagingVersion = "18.0.0"/' android/build.gradle
 
 
   # react-native-camera specifically is having some sort of reverse-jetify problem.
