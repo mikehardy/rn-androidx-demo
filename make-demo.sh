@@ -25,59 +25,28 @@ react-native init rnandroidxdemo --version react-native@0.$RNVERSION
 cd rnandroidxdemo
 
 # Install a bunch of native modules that might use support libraries
-yarn add @react-native-community/slider
-react-native link @react-native-community/slider
-yarn add react-native-camera
-react-native link react-native-camera
+MODULE_LIST="@react-native-community/slider react-native-camera react-native-fs react-native-push-notification"
+MODULE_LIST="$MODULE_LIST react-native-securerandom react-native-sqlite-storage react-native-vector-icons"
+MODULE_LIST="$MODULE_LIST react-navigation react-native-gesture-handler react-native-bottomsheet"
+MODULE_LIST="$MODULE_LIST @react-native-community/blur react-native-maps rn-android-prompt"
+
+yarn add $MODULE_LIST
+
+if [ "${RNVERSION}" == "59" ]; then
+  for MODULE in $MODULE_LIST; do
+    react-native link $MODULE
+  done
+fi
 
 # Camera is special - you have to choose a missingDimensionStrategy
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n        missingDimensionStrategy "react-native-camera", "general"/' android/app/build.gradle
 
-yarn add react-native-fs
-react-native link react-native-fs
-yarn add "git+https://github.com/laurent22/react-native-push-notification.git"
-\rm -fr node_modules/react-native-push-notification/.git
-react-native link react-native-push-notification
-yarn add react-native-securerandom
-react-native link react-native-securerandom
-yarn add react-native-sqlite-storage
-react-native link react-native-sqlite-storage
-yarn add react-native-vector-icons
-react-native link react-native-vector-icons
-yarn add react-navigation
-yarn add react-native-gesture-handler
-react-native link react-native-gesture-handler
-yarn add react-native-bottomsheet
-react-native link react-native-bottomsheet
-
-# It appears RN0.60 will have androidx library collisions if you specify a current one
-# in your dependencies, but gradle-plugin-jetifier auto-translates to 1.0.0 "strictly"
-# Unreleased patch here allows the *entire library name* to be changed so you can move the whole dependency
-# That was a special PR just for this project. If it works, other libraries might need it:
-# https://github.com/react-native-community/react-native-maps/commit/0c76619e8b4d591265348beb83f315ad05311670
-yarn add 'git+https://github.com/react-native-community/react-native-maps.git#mikehardy-patch-1'
-react-native link react-native-maps
-
-# react-native-razorpay does not allow version overrides so compileSdk is 26 - that breaks. 28 is jetify-able
-# master has an unreleased upstream PR to patch it so you can override, w/default to 28 for AndroidX
-#yarn add "git+https://github.com/razorpay/react-native-razorpay.git"
-#react-native link react-native-razorpay
-
-# Razorpay requires minSdk 19 - and this is so big now we need MultiDex if we don't go to 21
-# shouldn't affect AndroidX demonstration so we'll go with it
-sed -i -e $'s/minSdkVersion = 16/minSdkVersion = 21/' android/build.gradle
-
-# react-native-blur is special because renderscript isn't handled by normal Google jetifier. But we do it 8-)
-yarn add @react-native-community/blur
-react-native link @react-native-community/blur
-
-# renderscript in general need some special gradle sauce
+# renderscript in general need some special gradle sauce - react-native-blur is the showcase
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptTargetApi 28/' android/app/build.gradle
 sed -i -e $'s/defaultConfig {/defaultConfig {\\\n       renderscriptSupportModeEnabled true/' android/app/build.gradle
 
-# This is a kotlin repo, so will test kotlin transform
-yarn add rn-android-prompt
-react-native link rn-android-prompt
+# We need MultiDex if we don't go to 21 shouldn't affect AndroidX demonstration so we'll go with it
+sed -i -e $'s/minSdkVersion = 16/minSdkVersion = 21/' android/build.gradle
 
 # Assuming your code uses AndroidX, this is all the AndroidStudio AndroidX migration does besides transform
 # your app source and app libraries
@@ -86,14 +55,15 @@ echo "android.enableJetifier=true" >> android/gradle.properties
 
 # For RN60 Pin our AndroidX dependencies, including full library overrides (like for react-native-maps)
 # For RN59, new templates already come out with supportLibVersion set to 28, or we'd set it here
-if [ "${RNVERSION}" == "60" ]; then
-  sed -i -e $'s/supportLibVersion = "28.0.0"/supportLibVersion = "1.0.2"/' android/build.gradle
-  sed -i -e $'s/ext {/ext {\\\n        coreLibVersion = "1.0.2"/' android/build.gradle
-  sed -i -e $'s/ext {/ext {\\\n        compatLibVersion = "1.0.2"/' android/build.gradle
+if [ "${RNVERSION}" != "59" ]; then
+  sed -i -e $'s/supportLibVersion = "28.0.0"/supportLibVersion = "1.2.0-rc01"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        coreLibVersion = "1.3.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        compatLibVersion = "1.2.0-rc01"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        supportLibVersion = "1.2.0-rc01"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        coreLibName = "androidx.core:core"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        playServicesVersion = "17.0.0"/' android/build.gradle
   sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVersion = "17.0.0"/' android/build.gradle
-  sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "18.0.0"/' android/build.gradle
+  sed -i -e $'s/ext {/ext {\\\n        googlePlayServicesVisionVersion = "20.0.0"/' android/build.gradle
 fi
 
 # If we are in CI, we are being used as a test-suite for jetify, copy in the version under test
